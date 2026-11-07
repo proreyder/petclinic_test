@@ -46,3 +46,27 @@ para conservar la compatibilidad con el módulo existente de mascotas.
 Para el informe, adjuntar la salida de las pruebas, el enlace del repositorio y
 las evidencias de colaboración realizadas por el equipo. Los reportes de Maven
 se generan en `target/surefire-reports`.
+
+## Caso 2: dueños
+
+`com.tecsupt.petclinic.service.OwnerService` permite crear, actualizar, buscar por
+ID, listar y eliminar dueños. Incluye búsquedas por apellido y ciudad mediante
+coincidencia exacta. Las consultas sin coincidencias devuelven una lista vacía.
+Buscar, actualizar o eliminar un ID inexistente lanza `OwnerNotFoundException`.
+Actualizar conserva el ID; crear deja que la base de datos lo genere.
+
+El módulo utiliza `OwnerRequest`, `OwnerResponse` y MapStruct, con inyección por
+constructor y transacciones de servicio. Su repositorio no se publica por Data REST.
+La eliminación es física: según las claves foráneas existentes, también elimina
+las mascotas del dueño y sus visitas.
+
+```powershell
+.\mvnw.cmd test "-Dtest=OwnerServiceTest,OwnerServiceMockitoTest" "-Dlogging.file.name=target/test-application.log"
+```
+
+Ejecutar con Java 21 como se indica arriba. `OwnerServiceTest` verifica persistencia,
+filtros, errores y eliminación en cascada con H2; fuerza la escritura y limpia la
+caché JPA antes de comprobar los cambios. Cada prueba revierte sus datos.
+`OwnerServiceMockitoTest` verifica el mapeo de resultados y las llamadas al
+repositorio sin levantar Spring, incluyendo que no se guarden ni eliminen datos
+cuando el dueño no existe. Para toda la suite, ejecutar el comando general de pruebas.
